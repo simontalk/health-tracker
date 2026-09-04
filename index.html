@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#3B82F6" />
+  <title>健康追踪 · Health Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <span class="brand-icon">💪</span>
+        <span class="brand-text">健康追踪</span>
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="dashboard">概览</button>
+        <button class="nav-tab" data-tab="records">记录</button>
+        <button class="nav-tab" data-tab="stats">统计</button>
+        <button class="nav-tab" data-tab="settings">设置</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <h1>今日概览</h1>
+          <p class="subtitle" id="today-date"></p>
+        </div>
+        <div class="period-switch">
+          <button class="period-btn active" data-period="day">日</button>
+          <button class="period-btn" data-period="week">周</button>
+          <button class="period-btn" data-period="month">月</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">当前体重</div>
+          <div class="kpi-value" id="kpi-weight">--</div>
+          <div class="kpi-delta" id="kpi-weight-delta">--</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">当前腰围</div>
+          <div class="kpi-value" id="kpi-waist">--</div>
+          <div class="kpi-delta" id="kpi-waist-delta">--</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">BMI</div>
+          <div class="kpi-value" id="kpi-bmi">--</div>
+          <div class="kpi-delta" id="kpi-bmi-status">--</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">平均睡眠</div>
+          <div class="kpi-value" id="kpi-sleep">--</div>
+          <div class="kpi-delta" id="kpi-sleep-delta">--</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">目标进度</div>
+          <div class="kpi-value" id="kpi-goal">--</div>
+          <div class="kpi-delta" id="kpi-goal-text">设置目标</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">连续记录</div>
+          <div class="kpi-value" id="kpi-streak">--</div>
+          <div class="kpi-delta" id="kpi-total-days">共 0 天</div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>体重变化趋势</h3>
+            <span class="chart-hint">点击切换日/周/月视图</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-weight"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>腰围变化趋势</h3>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-waist"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>睡眠时长</h3>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-sleep"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>BMI 变化</h3>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="chart-bmi"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-add">
+        <h3>快捷录入今日数据</h3>
+        <button class="btn-primary" id="btn-quick-add">+ 记录今天</button>
+      </div>
+    </section>
+
+    <section class="page" id="page-records">
+      <div class="page-header">
+        <div>
+          <h1>每日记录</h1>
+          <p class="subtitle">记录你的体重、腰围、饮食和睡眠</p>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-secondary" id="btn-export">📤 导出</button>
+          <button class="btn-secondary" id="btn-import">📥 导入</button>
+          <input type="file" id="file-import" accept=".json" hidden />
+          <button class="btn-primary" id="btn-add">+ 新增记录</button>
+        </div>
+      </div>
+
+      <div class="records-header">
+        <div class="records-search">
+          <input type="date" id="search-date" />
+          <button class="btn-ghost" id="btn-search">筛选</button>
+          <button class="btn-ghost" id="btn-reset">重置</button>
+        </div>
+        <div class="records-count" id="records-count">共 0 条记录</div>
+      </div>
+
+      <div class="records-table-wrap">
+        <table class="records-table">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>体重</th>
+              <th>腰围</th>
+              <th>早餐</th>
+              <th>午餐</th>
+              <th>晚餐</th>
+              <th>入睡</th>
+              <th>起床</th>
+              <th>睡眠</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="records-body">
+          </tbody>
+        </table>
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">📝</div>
+          <p>还没有记录，点击"新增记录"开始追踪你的健康数据</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-stats">
+      <div class="page-header">
+        <div>
+          <h1>详细统计</h1>
+          <p class="subtitle">深入分析你的健康数据</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stats-card">
+          <h3>体重分析</h3>
+          <div class="stats-list">
+            <div class="stat-row"><span>最高体重</span><strong id="stat-weight-max">--</strong></div>
+            <div class="stat-row"><span>最低体重</span><strong id="stat-weight-min">--</strong></div>
+            <div class="stat-row"><span>平均体重</span><strong id="stat-weight-avg">--</strong></div>
+            <div class="stat-row"><span>7日平均</span><strong id="stat-weight-7d">--</strong></div>
+            <div class="stat-row"><span>30日平均</span><strong id="stat-weight-30d">--</strong></div>
+            <div class="stat-row"><span>周环比变化</span><strong id="stat-weight-week-change">--</strong></div>
+            <div class="stat-row"><span>月环比变化</span><strong id="stat-weight-month-change">--</strong></div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <h3>腰围分析</h3>
+          <div class="stats-list">
+            <div class="stat-row"><span>最高腰围</span><strong id="stat-waist-max">--</strong></div>
+            <div class="stat-row"><span>最低腰围</span><strong id="stat-waist-min">--</strong></div>
+            <div class="stat-row"><span>平均腰围</span><strong id="stat-waist-avg">--</strong></div>
+            <div class="stat-row"><span>7日平均</span><strong id="stat-waist-7d">--</strong></div>
+            <div class="stat-row"><span>30日平均</span><strong id="stat-waist-30d">--</strong></div>
+            <div class="stat-row"><span>周环比变化</span><strong id="stat-waist-week-change">--</strong></div>
+            <div class="stat-row"><span>月环比变化</span><strong id="stat-waist-month-change">--</strong></div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <h3>睡眠分析</h3>
+          <div class="stats-list">
+            <div class="stat-row"><span>最长睡眠</span><strong id="stat-sleep-max">--</strong></div>
+            <div class="stat-row"><span>最短睡眠</span><strong id="stat-sleep-min">--</strong></div>
+            <div class="stat-row"><span>平均睡眠</span><strong id="stat-sleep-avg">--</strong></div>
+            <div class="stat-row"><span>7日平均</span><strong id="stat-sleep-7d">--</strong></div>
+            <div class="stat-row"><span>30日平均</span><strong id="stat-sleep-30d">--</strong></div>
+            <div class="stat-row"><span>睡眠规律评分</span><strong id="stat-sleep-score">--</strong></div>
+            <div class="stat-row"><span>工作日平均</span><strong id="stat-sleep-weekday">--</strong></div>
+            <div class="stat-row"><span>周末平均</span><strong id="stat-sleep-weekend">--</strong></div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <h3>身体指标</h3>
+          <div class="stats-list">
+            <div class="stat-row"><span>当前 BMI</span><strong id="stat-bmi-current">--</strong></div>
+            <div class="stat-row"><span>BMI 状态</span><strong id="stat-bmi-status">--</strong></div>
+            <div class="stat-row"><span>最高 BMI</span><strong id="stat-bmi-max">--</strong></div>
+            <div class="stat-row"><span>最低 BMI</span><strong id="stat-bmi-min">--</strong></div>
+            <div class="stat-row"><span>基础代谢 (估算)</span><strong id="stat-bmr">--</strong></div>
+            <div class="stat-row"><span>理想体重范围</span><strong id="stat-ideal-weight">--</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-section">
+        <h3>周汇总</h3>
+        <div class="records-table-wrap">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>周次</th>
+                <th>起始日期</th>
+                <th>平均体重</th>
+                <th>平均腰围</th>
+                <th>平均睡眠</th>
+              </tr>
+            </thead>
+            <tbody id="week-summary-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-section">
+        <h3>月汇总</h3>
+        <div class="records-table-wrap">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>月份</th>
+                <th>平均体重</th>
+                <th>平均腰围</th>
+                <th>平均睡眠</th>
+              </tr>
+            </thead>
+            <tbody id="month-summary-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <h1>设置</h1>
+          <p class="subtitle">个性化你的健康追踪</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="settings-card">
+          <h3>个人信息</h3>
+          <div class="form-group">
+            <label>身高 (cm)</label>
+            <input type="number" id="setting-height" placeholder="例如：170" step="0.1" />
+            <p class="hint">用于计算 BMI 和基础代谢</p>
+          </div>
+          <div class="form-group">
+            <label>性别</label>
+            <select id="setting-gender">
+              <option value="male">男</option>
+              <option value="female">女</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>年龄</label>
+            <input type="number" id="setting-age" placeholder="例如：30" />
+          </div>
+          <button class="btn-primary" id="btn-save-profile">保存个人信息</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>目标设置</h3>
+          <div class="form-group">
+            <label>目标体重 (kg)</label>
+            <input type="number" id="setting-goal-weight" placeholder="例如：70" step="0.1" />
+            <p class="hint">设置后在概览页显示进度</p>
+          </div>
+          <div class="form-group">
+            <label>目标腰围 (cm)</label>
+            <input type="number" id="setting-goal-waist" placeholder="例如：85" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>目标睡眠 (小时/天)</label>
+            <input type="number" id="setting-goal-sleep" placeholder="例如：8" step="0.5" />
+          </div>
+          <button class="btn-primary" id="btn-save-goals">保存目标</button>
+        </div>
+
+        <div class="settings-card">
+          <h3>数据管理</h3>
+          <p class="card-desc">你的数据保存在浏览器本地，不会上传到任何服务器</p>
+          <div class="button-row">
+            <button class="btn-secondary" id="btn-settings-export">📤 导出所有数据</button>
+            <button class="btn-secondary" id="btn-settings-import">📥 导入数据</button>
+          </div>
+          <input type="file" id="settings-file-import" accept=".json" hidden />
+          <div class="danger-zone">
+            <button class="btn-danger" id="btn-clear-data">🗑️ 清空所有数据</button>
+            <p class="hint danger">此操作不可恢复，请先导出备份</p>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3>关于</h3>
+          <p class="card-desc">健康追踪 · Health Tracker</p>
+          <p class="card-desc">版本 1.0.0</p>
+          <p class="card-desc">数据本地存储，隐私安全</p>
+          <p class="card-desc">支持 PWA 离线使用</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="edit-modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">新增记录</h2>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <form id="record-form">
+        <input type="hidden" id="record-id" />
+        <div class="form-grid">
+          <div class="form-group">
+            <label>日期 *</label>
+            <input type="date" id="record-date" required />
+          </div>
+          <div class="form-group">
+            <label>体重 (kg)</label>
+            <input type="number" id="record-weight" step="0.1" placeholder="例如：75.5" />
+          </div>
+          <div class="form-group">
+            <label>腰围 (cm)</label>
+            <input type="number" id="record-waist" step="0.1" placeholder="例如：85.0" />
+          </div>
+          <div class="form-group">
+            <label>入睡时间</label>
+            <input type="time" id="record-bedtime" />
+          </div>
+          <div class="form-group">
+            <label>起床时间</label>
+            <input type="time" id="record-wakeup" />
+          </div>
+          <div class="form-group full-width">
+            <label>早餐</label>
+            <input type="text" id="record-breakfast" placeholder="记录早餐吃了什么" />
+          </div>
+          <div class="form-group full-width">
+            <label>午餐</label>
+            <input type="text" id="record-lunch" placeholder="记录午餐吃了什么" />
+          </div>
+          <div class="form-group full-width">
+            <label>晚餐</label>
+            <input type="text" id="record-dinner" placeholder="记录晚餐吃了什么" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" id="modal-cancel">取消</button>
+          <button type="submit" class="btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
