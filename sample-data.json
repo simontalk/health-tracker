@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "exportDate": "2026-09-04T00:00:00.000Z",
+  "records": [
+    {
+      "date": "2026-09-04",
+      "weight": 75.5,
+      "waist": 88.0,
+      "breakfast": "牛奶 + 全麦面包 + 鸡蛋",
+      "lunch": "米饭 + 鸡胸肉 + 青菜",
+      "dinner": "沙拉 + 三文鱼",
+      "bedtime": "23:30",
+      "wakeup": "07:00",
+      "sleep": 7.5
+    },
+    {
+      "date": "2026-09-05",
+      "weight": 75.2,
+      "waist": 87.5,
+      "breakfast": "燕麦粥 + 香蕉",
+      "lunch": "牛肉饭 + 蔬菜",
+      "dinner": "面条 + 鸡蛋",
+      "bedtime": "23:00",
+      "wakeup": "06:30",
+      "sleep": 7.5
+    },
+    {
+      "date": "2026-09-06",
+      "weight": 75.0,
+      "waist": 87.0,
+      "breakfast": "豆浆 + 包子",
+      "lunch": "外卖 - 黄焖鸡",
+      "dinner": "火锅",
+      "bedtime": "00:30",
+      "wakeup": "08:00",
+      "sleep": 7.5
+    },
+    {
+      "date": "2026-09-07",
+      "weight": 75.3,
+      "waist": 87.2,
+      "breakfast": "鸡蛋饼 + 牛奶",
+      "lunch": "三明治 + 咖啡",
+      "dinner": "家常菜",
+      "bedtime": "23:45",
+      "wakeup": "07:15",
+      "sleep": 7.5
+    },
+    {
+      "date": "2026-09-08",
+      "weight": 74.8,
+      "waist": 86.5,
+      "breakfast": "全麦面包 + 鸡蛋 + 牛奶",
+      "lunch": "轻食沙拉",
+      "dinner": "蒸鱼 + 蔬菜",
+      "bedtime": "22:30",
+      "wakeup": "06:00",
+      "sleep": 7.5
+    },
+    {
+      "date": "2026-09-09",
+      "weight": 74.5,
+      "waist": 86.0,
+      "breakfast": "水果 + 酸奶 + 坚果",
+      "lunch": "糙米饭 + 鸡胸肉",
+      "dinner": "蔬菜汤 + 面包",
+      "bedtime": "23:00",
+      "wakeup": "06:30",
+      "sleep": 7.5
+    },
+    {
+      "date": "2026-09-10",
+      "weight": 74.2,
+      "waist": 85.5,
+      "breakfast": "燕麦 + 蓝莓",
+      "lunch": "牛肉沙拉",
+      "dinner": "寿司",
+      "bedtime": "22:45",
+      "wakeup": "06:15",
+      "sleep": 7.5
+    }
+  ],
+  "settings": {
+    "height": 175,
+    "gender": "male",
+    "age": 30,
+    "goalWeight": 70.0,
+    "goalWaist": 80.0,
+    "goalSleep": 8
+  }
+}
