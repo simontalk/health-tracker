@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 </head>
 <body>
+  <!-- 顶部导航 -->
   <header class="nav">
     <div class="nav-inner">
       <div class="brand">
@@ -26,6 +27,7 @@
   </header>
 
   <main class="main">
+    <!-- ==================== 概览页 ==================== -->
     <section class="page active" id="page-dashboard">
       <div class="page-header">
         <div>
@@ -39,6 +41,7 @@
         </div>
       </div>
 
+      <!-- KPI 卡片 -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">当前体重</div>
@@ -72,6 +75,7 @@
         </div>
       </div>
 
+      <!-- 图表区域 -->
       <div class="chart-row">
         <div class="chart-card">
           <div class="chart-header">
@@ -111,12 +115,14 @@
         </div>
       </div>
 
+      <!-- 快捷录入 -->
       <div class="quick-add">
         <h3>快捷录入今日数据</h3>
         <button class="btn-primary" id="btn-quick-add">+ 记录今天</button>
       </div>
     </section>
 
+    <!-- ==================== 记录页 ==================== -->
     <section class="page" id="page-records">
       <div class="page-header">
         <div>
@@ -131,6 +137,7 @@
         </div>
       </div>
 
+      <!-- 记录列表 -->
       <div class="records-header">
         <div class="records-search">
           <input type="date" id="search-date" />
@@ -150,8 +157,9 @@
               <th>早餐</th>
               <th>午餐</th>
               <th>晚餐</th>
-              <th>入睡</th>
-              <th>起床</th>
+              <th>加餐</th>
+              <th>入睡（昨晚）</th>
+              <th>起床（今早）</th>
               <th>睡眠</th>
               <th>操作</th>
             </tr>
@@ -166,6 +174,7 @@
       </div>
     </section>
 
+    <!-- ==================== 统计页 ==================== -->
     <section class="page" id="page-stats">
       <div class="page-header">
         <div>
@@ -228,6 +237,7 @@
         </div>
       </div>
 
+      <!-- 周汇总表 -->
       <div class="table-section">
         <h3>周汇总</h3>
         <div class="records-table-wrap">
@@ -246,6 +256,7 @@
         </div>
       </div>
 
+      <!-- 月汇总表 -->
       <div class="table-section">
         <h3>月汇总</h3>
         <div class="records-table-wrap">
@@ -264,6 +275,7 @@
       </div>
     </section>
 
+    <!-- ==================== 设置页 ==================== -->
     <section class="page" id="page-settings">
       <div class="page-header">
         <div>
@@ -337,6 +349,7 @@
     </section>
   </main>
 
+  <!-- ==================== 编辑弹窗 ==================== -->
   <div class="modal" id="edit-modal">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
@@ -360,12 +373,14 @@
             <input type="number" id="record-waist" step="0.1" placeholder="例如：85.0" />
           </div>
           <div class="form-group">
-            <label>入睡时间</label>
+            <label>入睡时间（前一天晚上）</label>
             <input type="time" id="record-bedtime" />
+            <p class="hint">例如：昨晚 23:30 入睡</p>
           </div>
           <div class="form-group">
-            <label>起床时间</label>
+            <label>起床时间（今天早上）</label>
             <input type="time" id="record-wakeup" />
+            <p class="hint">例如：今早 07:00 起床</p>
           </div>
           <div class="form-group full-width">
             <label>早餐</label>
@@ -379,6 +394,10 @@
             <label>晚餐</label>
             <input type="text" id="record-dinner" placeholder="记录晚餐吃了什么" />
           </div>
+          <div class="form-group full-width">
+            <label>加餐</label>
+            <input type="text" id="record-snack" placeholder="记录三餐外的加餐、零食、水果等" />
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-ghost" id="modal-cancel">取消</button>
@@ -388,8 +407,10 @@
     </div>
   </div>
 
+  <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
 
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
