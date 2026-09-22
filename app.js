@@ -5,6 +5,7 @@
   // ========== 数据层 ==========
   const STORAGE_KEY = 'health-tracker-data';
   const SETTINGS_KEY = 'health-tracker-settings';
+  const DATA_VERSION = 2; // 当前数据版本，字段变更时递增
 
   const store = {
     records: [],
@@ -20,6 +21,57 @@
     charts: {},
   };
 
+  /**
+   * 数据迁移：将旧版本数据升级到最新格式
+   * 确保旧记录也有新字段（如 snack），避免显示异常
+   */
+  function migrateData() {
+    let migrated = false;
+
+    // 为每条记录补全缺失的字段
+    store.records.forEach((record, index) => {
+      const original = JSON.stringify(record);
+      const defaults = {
+        date: null,
+        weight: null,
+        waist: null,
+        breakfast: null,
+        lunch: null,
+        dinner: null,
+        snack: null,       // v2 新增：加餐
+        bedtime: null,
+        wakeup: null,
+        sleep: null,
+      };
+      store.records[index] = { ...defaults, ...record };
+      if (JSON.stringify(store.records[index]) !== original) {
+        migrated = true;
+      }
+    });
+
+    // 设置也补全缺失字段
+    const settingDefaults = {
+      height: null,
+      gender: 'male',
+      age: null,
+      goalWeight: null,
+      goalWaist: null,
+      goalSleep: 8,
+    };
+    const originalSettings = JSON.stringify(store.settings);
+    store.settings = { ...settingDefaults, ...store.settings };
+    if (JSON.stringify(store.settings) !== originalSettings) {
+      migrated = true;
+    }
+
+    // 如果有迁移，保存到本地
+    if (migrated) {
+      saveData();
+      saveSettings();
+      console.log(`[数据迁移] 已升级到 v${DATA_VERSION}`);
+    }
+  }
+
   function loadData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -34,6 +86,8 @@
     } catch (e) {
       console.error('加载设置失败', e);
     }
+    // 加载后执行数据迁移
+    migrateData();
     sortRecords();
   }
 
@@ -726,7 +780,7 @@
   // ========== 导入导出 ==========
   function exportData() {
     const data = {
-      version: 1,
+      version: DATA_VERSION,
       exportDate: new Date().toISOString(),
       records: store.records,
       settings: store.settings,
@@ -922,9 +976,55 @@
     // 初始渲染
     refreshAll();
 
-    // PWA Service Worker
+    // PWA Service Worker - 支持更新检测
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      let newWorker = null;
+
+      // 显示更新提示条
+      function showUpdateBanner() {
+        const banner = document.getElementById('update-banner');
+        if (banner) {
+          banner.classList.add('show');
+          document.body.style.paddingTop = '48px';
+        }
+      }
+
+      // 立即更新（刷新页面激活新 SW）
+      document.getElementById('btn-update-now').addEventListener('click', () => {
+        if (newWorker && newWorker.state === 'installed') {
+          newWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+        window.location.reload();
+      });
+
+      // 注册 Service Worker
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        // 检测是否有新版本在安装中
+        reg.addEventListener('updatefound', () => {
+          newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            // 新版本安装完成，等待激活
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
+        });
+
+        // 如果已经有等待激活的新 SW，也显示更新提示
+        if (reg.waiting) {
+          newWorker = reg.waiting;
+          showUpdateBanner();
+        }
+      }).catch(() => {});
+
+      // 新 SW 激活后刷新页面
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
   }
 
