@@ -236,6 +236,78 @@
     return avg(filtered.map(d => d.value));
   }
 
+  /**
+   * 计算日均减重速度
+   * - 优先使用最近7天的数据（更能反映近期趋势）
+   * - 如果7天内数据不足3条，使用全部数据
+   * - 返回值：正数表示体重在下降，负数表示在上升，null表示数据不足
+   */
+  function calcDailyWeightLoss() {
+    const weights = getWeight();
+    if (weights.length < 3) return null;
+
+    // 优先用最近7天
+    const cutoff = daysAgo(7);
+    const recent = weights.filter(w => w.date >= cutoff);
+
+    let startWeight, endWeight, daysSpan;
+
+    if (recent.length >= 3) {
+      // 用最近7天数据计算
+      startWeight = recent[0].value;
+      endWeight = recent[recent.length - 1].value;
+      const startDate = new Date(recent[0].date);
+      const endDate = new Date(recent[recent.length - 1].date);
+      daysSpan = (endDate - startDate) / (1000 * 60 * 60 * 24);
+    } else {
+      // 数据不足，用全部历史
+      startWeight = weights[0].value;
+      endWeight = weights[weights.length - 1].value;
+      const startDate = new Date(weights[0].date);
+      const endDate = new Date(weights[weights.length - 1].date);
+      daysSpan = (endDate - startDate) / (1000 * 60 * 60 * 24);
+    }
+
+    if (daysSpan < 1) return null;
+
+    // 日均减重 = (起始体重 - 结束体重) / 天数
+    // 正数：体重在下降（好）
+    // 负数：体重在上升（反弹）
+    return (startWeight - endWeight) / daysSpan;
+  }
+
+  /**
+   * 计算预计达成目标的天数
+   * 返回 { days: number|null, status: 'normal'|'achieved'|'gaining'|'insufficient' }
+   */
+  function calcGoalDays(currentWeight, goalWeight) {
+    if (currentWeight == null || goalWeight == null) {
+      return { days: null, status: 'insufficient' };
+    }
+
+    const remaining = currentWeight - goalWeight;
+
+    // 已经达成或超过目标
+    if (remaining <= 0) {
+      return { days: 0, status: 'achieved' };
+    }
+
+    const dailyLoss = calcDailyWeightLoss();
+
+    if (dailyLoss == null) {
+      return { days: null, status: 'insufficient' };
+    }
+
+    // 体重在增加（反向趋势）
+    if (dailyLoss <= 0) {
+      return { days: null, status: 'gaining' };
+    }
+
+    // 预计天数 = 剩余体重 ÷ 日均减重，向上取整，最少1天
+    const days = Math.max(1, Math.ceil(remaining / dailyLoss));
+    return { days, status: 'normal' };
+  }
+
   // 按周聚合
   function aggregateByWeek(data) {
     if (!data.length) return [];
@@ -493,15 +565,39 @@
     // 目标进度
     const goalEl = document.getElementById('kpi-goal');
     const goalTextEl = document.getElementById('kpi-goal-text');
+    const goalDaysEl = document.getElementById('kpi-goal-days');
     if (s.goalWeight && latestWeight) {
       const total = firstWeight - s.goalWeight;
       const done = firstWeight - latestWeight;
       const pct = total > 0 ? Math.min(100, Math.max(0, (done / total) * 100)) : 0;
       goalEl.textContent = pct.toFixed(0) + '%';
       goalTextEl.textContent = `目标 ${s.goalWeight} kg · 还差 ${(latestWeight - s.goalWeight).toFixed(1)} kg`;
+
+      // 预计达成天数
+      const goalResult = calcGoalDays(latestWeight, s.goalWeight);
+      goalDaysEl.className = 'kpi-delta';
+      switch (goalResult.status) {
+        case 'normal':
+          goalDaysEl.textContent = `预计 ${goalResult.days} 天达成`;
+          goalDaysEl.classList.add('goal-days');
+          break;
+        case 'achieved':
+          goalDaysEl.textContent = '🎉 目标已达成';
+          goalDaysEl.classList.add('goal-days');
+          break;
+        case 'gaining':
+          goalDaysEl.textContent = '📈 近期体重反弹';
+          goalDaysEl.classList.add('negative');
+          break;
+        case 'insufficient':
+        default:
+          goalDaysEl.textContent = '';
+          break;
+      }
     } else {
       goalEl.textContent = '--';
       goalTextEl.textContent = '设置目标';
+      goalDaysEl.textContent = '';
     }
 
     // 连续记录
