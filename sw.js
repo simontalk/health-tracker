@@ -1,4 +1,5 @@
-const CACHE_NAME = 'health-tracker-v1';
+// Service Worker - 离线缓存 v2
+const CACHE_NAME = 'health-tracker-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +8,13 @@ const ASSETS = [
   './manifest.json',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
 ];
+
+// 接收跳过等待消息，立即激活新 SW
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -27,6 +35,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
+
+  // 同源资源：缓存优先，失败回退网络
   event.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
@@ -37,7 +47,9 @@ self.addEventListener('fetch', event => {
         }
         return response;
       }).catch(() => {
-        if (req.mode === 'navigate') return caches.match('./index.html');
+        if (req.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
       });
     })
   );
